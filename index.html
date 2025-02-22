@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live OTP Generator (2FA)</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      text-align: center;
+      padding: 50px;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+      display: inline-block;
+    }
+    input, button {
+      padding: 10px;
+      margin: 10px;
+      width: 80%;
+    }
+    img {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>2FA Live OTP Generator</h1>
+  <div class="container">
+    <button onclick="generateOTP()">Generate OTP</button>
+    <p id="secret"></p>
+    <img id="qrCode" src="" alt="QR Code" width="200">
+
+    <h2>Verify OTP</h2>
+    <input type="text" id="otpInput" placeholder="Enter OTP">
+    <button onclick="verifyOTP()">Verify</button>
+    <p id="result"></p>
+  </div>
+
+  <script>
+    let secret = '';
+
+    async function generateOTP() {
+      const response = await fetch('http://localhost:3000/generate-otp');
+      const data = await response.json();
+      secret = data.secret;
+
+      document.getElementById('secret').textContent = `Secret: ${data.secret}`;
+      document.getElementById('qrCode').src = data.qrCode;
+    }
+
+    async function verifyOTP() {
+      const otp = document.getElementById('otpInput').value;
+
+      const response = await fetch('http://localhost:3000/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: otp, secret })
+      });
+
+      const data = await response.json();
+      document.getElementById('result').textContent = data.verified ? '✅ OTP is valid!' : '❌ Invalid OTP!';
+    }
+  </script>
+</body>
+</html>
